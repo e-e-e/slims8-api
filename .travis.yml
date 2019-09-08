@@ -9,7 +9,7 @@ env:
 services:
   - mysql
 beforeInstall:
-  - mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
+  - mysql -e 'CREATE DATABASE slims_test;'
 # before_script: "npm run-script lint"
 script: "npm run-script test"
 # after_script: "npm run coverage"

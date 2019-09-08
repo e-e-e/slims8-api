@@ -17,7 +17,7 @@ export default {
     connection: {
       host: '127.0.0.1',
       port: '3306',
-      database: "test",
+      database: "slims_test",
       user: 'travis',
       password: "",
       multipleStatements: true
