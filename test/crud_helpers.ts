@@ -1,4 +1,4 @@
-import knexConfig from '../knexfile';
+import { createDatabase } from './database';
 import Knex from 'knex'
 // import { PartialBy, WithPartialIds, WithNestedPartialIds } from '../src/models/data_types';
 import { Model, Data, RequiredId } from '../src/models/abstract_crud';
@@ -36,7 +36,7 @@ export function createCrudTests<T extends Data>({
     })) as RequiredId<T>[];
 
     beforeAll(async () => {
-      knex = Knex(knexConfig.test);
+      knex = createDatabase();
       await knex.seed.run()
       model = createModel(knex);
     })

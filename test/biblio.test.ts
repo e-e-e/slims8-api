@@ -2,7 +2,7 @@ import { Biblio, BiblioData } from '../src/models/biblio';
 import { createCrudTests } from './crud_helpers';
 import { Publisher } from '../src/models/publisher';
 import { Place } from '../src/models/place';
-import knexConfig from '../knexfile';
+import { createDatabase } from './database';
 import Knex from 'knex';
 import { GeneralMaterialDesignation } from '../src/models/gmd';
 import { ContentType } from '../src/models/content_type';
@@ -102,7 +102,7 @@ describe('Biblio', () => {
     let model: Biblio;
 
     beforeAll(async () => {
-      knex = Knex(knexConfig.test);
+      knex = createDatabase();
       await knex.seed.run()
       model = createModel(knex);
     })

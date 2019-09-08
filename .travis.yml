@@ -4,10 +4,12 @@ node_js:
   - "10"
   - "12"
 dist: xenial
+env:
+  - NODE_ENV=travis
 services:
   - mysql
 beforeInstall:
-  - mysql -e 'CREATE DATABASE IF NOT EXISTS slims_api_test;'
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS test;'
 # before_script: "npm run-script lint"
 script: "npm run-script test"
 # after_script: "npm run coverage"
