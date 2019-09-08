@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+  - "8"
+  - "10"
+  - "12"
+dist: xenial
+services:
+  - mysql
+beforeInstall:
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS slims_api_test;'
+# before_script: "npm run-script lint"
+script: "npm run-script test"
+# after_script: "npm run coverage"
