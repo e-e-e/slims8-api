@@ -1,5 +1,7 @@
+/* eslint-env jest */
+
 import { createDatabase } from './database';
-import Knex from 'knex'
+import Knex from 'knex';
 // import { PartialBy, WithPartialIds, WithNestedPartialIds } from '../src/models/data_types';
 import { Model, Data, RequiredId } from '../src/models/abstract_crud';
 
@@ -8,8 +10,9 @@ function expectObjectContainingNested(obj: Record<string, any>) {
     o[k] = typeof obj[k] === 'object' ? expect.objectContaining(obj[k] as {}) : obj[k];
     return o;
   }, {});
-  return expect.objectContaining(x)
+  return expect.objectContaining(x);
 }
+
 
 export function createCrudTests<T extends Data>({
   createModel,
@@ -19,12 +22,12 @@ export function createCrudTests<T extends Data>({
   find,
   duplicates,
 }: {
-  createModel: (knex: Knex) => Model<T>,
-  clean?: (knex: Knex) => Promise<any>,
-  seeds: T[],
-  create: T[],
-  find?: Partial<T>[],
-  duplicates?: T[],
+  createModel: (knex: Knex) => Model<T>;
+  clean?: (knex: Knex) => Promise<any>;
+  seeds: T[];
+  create: T[];
+  find?: Partial<T>[];
+  duplicates?: T[];
 }) {
   return () => {
     let knex: Knex;
@@ -37,9 +40,9 @@ export function createCrudTests<T extends Data>({
 
     beforeAll(async () => {
       knex = createDatabase();
-      await knex.seed.run()
+      await knex.seed.run();
       model = createModel(knex);
-    })
+    });
 
     afterAll(async () => {
       await knex.destroy();
@@ -66,13 +69,13 @@ export function createCrudTests<T extends Data>({
           const id = await model.create(data);
           expect(id).toBeGreaterThan(0);
           expect(model.create(data)).rejects.toThrowError(/ER_DUP_ENTRY/);
-        })
+        });
       }
     });
 
     describe('get', () => {
-      test.each(seedsWithIds)(`get %o`, async (data) => {
-        if (data.id === undefined) return fail('seeds should have id');
+      test.each(seedsWithIds)('get %o', async (data) => {
+        if (data.id === undefined) throw new Error('seeds should have id');
         const result = await model.get(data.id);
         expect(result).toEqual(expect.objectContaining(data));
         expect(result).toHaveProperty('created', expect.any(Date));
@@ -96,8 +99,8 @@ export function createCrudTests<T extends Data>({
       test.each(find || seeds)('finds item %o', async (searchData) => {
         const result = await model.find(searchData);
         expect(result.length).toBeGreaterThan(0);
-        result.forEach(res => expect(res).toEqual(expectObjectContainingNested(searchData)))
-      })
+        result.forEach(res => expect(res).toEqual(expectObjectContainingNested(searchData)));
+      });
     });
 
     describe('update', () => {
@@ -106,11 +109,11 @@ export function createCrudTests<T extends Data>({
           const newData: RequiredId<T> = {
             ...data,
             id: seed.id,
-          }
+          };
           const effected = await model.update(newData);
           expect(effected).toEqual(1);
-          expect(await model.get(seed.id)).toEqual(expectObjectContainingNested(newData))
-        })
+          expect(await model.get(seed.id)).toEqual(expectObjectContainingNested(newData));
+        });
       });
 
       it('returns 0 when no records are updated', async () => {
@@ -118,10 +121,10 @@ export function createCrudTests<T extends Data>({
         const result = await model.update({
           ...seedsWithIds[0],
           id,
-        } as RequiredId<T>)
+        });
         expect(result).toEqual(0);
         expect(await model.get(id)).toBeUndefined();
-      })
+      });
     });
 
     describe('delete', () => {
@@ -138,5 +141,5 @@ export function createCrudTests<T extends Data>({
 
       });
     });
-  }
+  };
 }

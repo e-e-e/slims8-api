@@ -35,14 +35,14 @@ describe('Biblio', () => {
       timeIncrement: 3,
       timeUnit: 'month',
     },
-  }
+  };
   const withLanguage: BiblioData = {
     title: 'The Cultural Politics of Emotions',
     language: {
       id: 'en',
       name: 'English'
     }
-  }
+  };
   const books = [
     simple,
     withPublisher,
@@ -64,7 +64,7 @@ describe('Biblio', () => {
     title: 'Architecture & Violence',
     publishYear: '2012',
     isbnIssn: '978-8492861736',
-  }]
+  }];
 
   const createModel = (db: Knex) => {
     const publisher = new Publisher(db);
@@ -85,34 +85,35 @@ describe('Biblio', () => {
       frequency,
       language,
     });
-  }
+  };
 
+  /* eslint-disable-next-line jest/valid-describe */
   describe('abstract crud interface', createCrudTests<BiblioData>({
     createModel,
     clean: async (knex) => {
-      await knex(`biblio`).delete().where('biblio_id', '>=', 0);
-      await knex(`mst_publisher`).delete().where('publisher_id', '>=', 0)
+      await knex('biblio').delete().where('biblio_id', '>=', 0);
+      await knex('mst_publisher').delete().where('publisher_id', '>=', 0);
     },
     seeds,
     create: books,
-  }))
+  }));
 
-  describe('specifics', () => {
-    let knex: Knex;
-    let model: Biblio;
+  // describe('specifics', () => {
+  //   let knex: Knex;
+  //   let model: Biblio;
 
-    beforeAll(async () => {
-      knex = createDatabase();
-      await knex.seed.run()
-      model = createModel(knex);
-    })
+  //   beforeAll(async () => {
+  //     knex = createDatabase();
+  //     await knex.seed.run();
+  //     model = createModel(knex);
+  //   });
 
-    afterAll(async () => {
-      await knex.destroy();
-    });
+  //   afterAll(async () => {
+  //     await knex.destroy();
+  //   });
 
-    it('kkk', async () => {
+  //   it('kkk', async () => {
 
-    });
-  })
+  //   });
+  // });
 });

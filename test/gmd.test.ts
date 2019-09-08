@@ -15,13 +15,14 @@ describe('GeneralMaterialDesignation', () => {
   }, {
     name: 'CD',
     code: 'CD'
-  }]
+  }];
 
+  /* eslint-disable-next-line jest/valid-describe */
   describe('abstract crud interface', createCrudTests<GmdData>({
     createModel: db => new GeneralMaterialDesignation(db),
-    clean: async (knex) => knex(`mst_gmd`).delete().where('gmd_id', '>=', 0),
+    clean: async (knex) => knex('mst_gmd').delete().where('gmd_id', '>=', 0),
     seeds,
     create: gmd,
     duplicates: gmd,
-  }))
+  }));
 });

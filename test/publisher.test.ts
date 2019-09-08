@@ -12,13 +12,14 @@ describe('Publisher', () => {
     name: 'Oxford Press',
   }, {
     name: 'Uh Books',
-  }]
+  }];
 
+  /* eslint-disable-next-line jest/valid-describe */
   describe('abstract crud interface', createCrudTests<PublisherData>({
     createModel: db => new Publisher(db),
-    clean: async (knex) => knex(`mst_publisher`).delete().where('publisher_id', '>=', 0),
+    clean: async (knex) => knex('mst_publisher').delete().where('publisher_id', '>=', 0),
     seeds,
     create: publishers,
     duplicates: publishers,
-  }))
+  }));
 });

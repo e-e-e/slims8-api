@@ -16,13 +16,14 @@ describe('Topic', () => {
 
   const seeds = [{
     name: 'Posthumanism',
-  }]
+  }];
 
+  /* eslint-disable-next-line jest/valid-describe */
   describe('abstract crud interface', createCrudTests<TopicData>({
     createModel: db => new Topic(db),
-    clean: async (knex) => knex(`mst_topic`).delete().where('topic_id', '>=', 0),
+    clean: async (knex) => knex('mst_topic').delete().where('topic_id', '>=', 0),
     seeds,
     create: topics,
     duplicates: topics,
-  }))
+  }));
 });
