@@ -13,8 +13,8 @@ before_install:
 
 jobs:
   include:
-    - stage: test
+    - stage: lint
       script: npm run-script lint
-    -
+    - stage: test
       script: npm run-script test
       # after_script: "npm run coverage"
