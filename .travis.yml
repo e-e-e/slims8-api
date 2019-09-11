@@ -10,6 +10,11 @@ services:
   - mysql
 before_install:
   - mysql -e 'CREATE DATABASE slims_test;'
-# before_script: "npm run-script lint"
-script: "npm run-script test"
-# after_script: "npm run coverage"
+
+jobs:
+  include:
+    - stage: test
+      script: npm run-script lint
+    -
+      script: npm run-script test
+      # after_script: "npm run coverage"
