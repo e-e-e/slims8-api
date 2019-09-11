@@ -35,6 +35,8 @@ export function createSlimsApi(connection: Config): SlimsApi {
   const mediaType = new MediaType(db);
   const frequency = new Frequency(db);
   const language = new Language(db);
+  const author = new Author(db);
+  const topic = new Topic(db);
   const biblio = new Biblio(db, {
     publisher,
     gmd,
@@ -44,9 +46,10 @@ export function createSlimsApi(connection: Config): SlimsApi {
     mediaType,
     frequency,
     language,
+    author,
+    topic,
   });
-  const author = new Author(db);
-  const topic = new Topic(db);
+
   return {
     biblio,
     author,

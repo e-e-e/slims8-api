@@ -1,36 +1,15 @@
-import { Author, AuthorData, AuthorType } from '../src/models/author';
+import { Author, AuthorData } from '../src/models/author';
 import { createCrudTests } from './crud_helpers';
-
+import { marx, donna, invisibleCollective, frontyard, proudhon } from './fakes/authors';
 describe('Author', () => {
 
-  const marx: AuthorData = {
-    name: 'Marx, Karl',
-    type: AuthorType.PERSON,
-  };
-  const donna: AuthorData = {
-    name: 'Haraway, Donna',
-    year: '1970',
-    type: AuthorType.PERSON,
-  };
-  const invisibleCollective: AuthorData = {
-    name: 'The Invisible Collective',
-    type: AuthorType.COLLECTIVE,
-  };
-  const frontyard: AuthorData = {
-    name: 'Frontyard Projects Inc',
-    type: AuthorType.ORGANISATION,
-    authorityList: 'hearsay'
-  };
   const authors = [
     donna,
     invisibleCollective,
     frontyard,
     marx,
   ];
-  const seeds = [{
-    name: 'Proudhon',
-    type: AuthorType.PERSON,
-  }];
+  const seeds = [proudhon];
 
   /* eslint-disable-next-line jest/valid-describe */
   describe('basic crud operations', createCrudTests<AuthorData>({

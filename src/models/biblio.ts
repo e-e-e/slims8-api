@@ -9,6 +9,8 @@ import { CarrierType, CarrierTypeData } from './carrier_type';
 import { ContentType, ContentTypeData } from './content_type';
 import { MediaType, MediaTypeData } from './media_type';
 import { Language, LanguageData } from './language';
+import { Author, AuthorData } from './author';
+import { Topic, TopicData } from './topic';
 
 export type BiblioData = Data & {
   gmd?: GmdData,
@@ -97,6 +99,8 @@ type Models = {
   carrierType: CarrierType,
   frequency: Frequency,
   language: Language,
+  topic: Topic,
+  author: Author,
 }
 
 async function createOrUpdate<T extends Data>(data: T | undefined, model: Model<T>) {
@@ -133,12 +137,57 @@ async function maybeGetData<T extends Data>(id: number | undefined, model: Model
 
 export class Biblio extends AbstractCrudModel<BiblioData, RawBiblioData, 'biblio_id'> {
 
+  private readonly authorRelationTable = 'biblio_author';
+  private readonly topicRelationTable = 'biblio_topic';
+
   constructor(
     db: Knex,
     private readonly models: Models,
   ) {
     super(db, biblioTable, biblioColumns.id);
   }
+
+  // Author related functions
+  async addAuthor(biblioId: number, author: AuthorData | number, level: number) {
+    // Do we throw error if biblioId does not exist or author does not exist
+    if (!await this.get(biblioId)) throw new Error(`Biblio with id ${author} does not exist`);
+    let id = typeof author === 'number' ? author : author.id;
+    if (id !== undefined) {
+      const a = await this.models.author.get(id)
+      if (!a && typeof author === 'number') {
+        throw new Error(`Author with id ${author} does not exist`);
+      } else if (!a) {
+        id = undefined;
+      }
+    }
+    if (id === undefined && typeof author !== 'number') {
+      id = await this.models.author.create(author);
+    }
+    await this.db(this.authorRelationTable).insert({
+      [biblioColumns.id]: biblioId,
+      author_id: id,
+      level,
+    });
+    return id;
+  }
+
+  async getAuthors(biblioId: number) {
+    const results = await this.db(this.authorRelationTable).select('author_id').where(biblioColumns.id, biblioId);
+    return Promise.all(
+      results.map(result => this.models.author.get(result.author_id))
+    );
+  }
+
+  async removeAuthor(biblioId: number, author: AuthorData | number) {
+    if (typeof author !== 'number' && !author.id) {
+      throw new Error('Author with id required!');
+    }
+    return this.db(this.authorRelationTable).delete().where({
+      [biblioColumns.id]: biblioId,
+      author_id: typeof author !== 'number' ? author.id : author,
+    });
+  }
+
 
   protected toPartialRaw(data: Partial<BiblioData>) {
     return {
