@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import { Biblio, BiblioData } from '../src/models/biblio';
 import { createCrudTests } from './crud_helpers';
 import { Publisher } from '../src/models/publisher';
@@ -102,7 +103,7 @@ describe('Biblio', () => {
     await db('mst_place').delete();
     await db('biblio_author').delete();
     await db('mst_author').delete();
-  }
+  };
 
   /* eslint-disable-next-line jest/valid-describe */
   describe('abstract crud interface', createCrudTests<BiblioData>({
@@ -166,13 +167,13 @@ describe('Biblio', () => {
           biblio_id: bookId,
           author_id: person,
           level: 1,
-        })
+        });
       });
 
       it('creates new author if does not exist (without id specified)', async () => {
         const bookId = await model.create(simple);
         if (!bookId) throw new Error('Biblio creation failed');
-        await model.addAuthor(bookId!, proudhon, 2);
+        await model.addAuthor(bookId, proudhon, 2);
         const authors = await author.all();
         const results = await db('biblio_author').select();
         expect(results).toHaveLength(1);
@@ -181,14 +182,14 @@ describe('Biblio', () => {
           biblio_id: bookId,
           author_id: authors[0].id,
           level: 2,
-        })
+        });
       });
 
       it('creates new author if does not exist (with id specified)', async () => {
         const bookId = await model.create(simple);
         if (!bookId) throw new Error('Biblio creation failed');
         const donnaWithId = { ...donna, id: 1234 };
-        await model.addAuthor(bookId!, donnaWithId, 2);
+        await model.addAuthor(bookId, donnaWithId, 2);
         const authors = await author.all();
         expect(authors).toHaveLength(1);
         const results = await db('biblio_author').select();
@@ -197,22 +198,22 @@ describe('Biblio', () => {
           biblio_id: bookId,
           author_id: authors[0].id,
           level: 2,
-        })
+        });
         expect(authors[0].id).toEqual(1234);
       });
 
       it('throws error if author id does not exist', async () => {
         const bookId = await model.create(simple);
         if (!bookId) throw new Error('Biblio creation failed');
-        expect(model.addAuthor(bookId, 1000, 1)).rejects.toThrowError();
+        await expect(model.addAuthor(bookId, 1000, 1)).rejects.toThrow();
       });
 
       it('throws error is book id is undefined', async () => {
         const authorId = await author.create(invisibleCollective);
         if (!authorId) throw new Error('Author creation failed');
-        expect(model.addAuthor(100000, authorId, 1)).rejects.toThrowError();
+        await expect(model.addAuthor(100000, authorId, 1)).rejects.toThrow();
       });
-    })
+    });
 
     describe('getAuthors', () => {
       it('returns an empty array if no authors associated with biblio id', async () => {
@@ -233,7 +234,7 @@ describe('Biblio', () => {
         expect(authors[1]).toEqual(expect.objectContaining(donna));
         expect(authors[2]).toEqual(expect.objectContaining(frontyard));
       });
-    })
+    });
 
     describe('removeAuthor', () => {
       it('removes author association', async () => {
@@ -260,8 +261,8 @@ describe('Biblio', () => {
         await model.removeAuthor(bookId, person);
         const results = await db('biblio_author').select();
         expect(results).toHaveLength(0);
-        expect(author.get(person)).resolves.toEqual(expect.objectContaining(marx))
-      })
-    })
+        await expect(author.get(person)).resolves.toEqual(expect.objectContaining(marx));
+      });
+    });
   });
 });

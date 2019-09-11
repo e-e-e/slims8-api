@@ -1,13 +1,11 @@
+/* eslint-env jest */
+
+
 export function createMockInstance<T>(ctor: new (...args: any[]) => T): jest.Mocked<T> {
   const klass = Object.create(ctor.prototype);
 
-  stubWalk(klass);
-  return klass as jest.Mocked<T>;
-
   function stubWalk(obj: object, context?: any, seen?: any) {
-    if (obj === Object.prototype) {
-      return;
-    }
+    if (obj === Object.prototype) return;
 
     seen = seen || {};
     context = context || obj;
@@ -27,4 +25,7 @@ export function createMockInstance<T>(ctor: new (...args: any[]) => T): jest.Moc
       stubWalk(proto, context, seen);
     }
   }
+
+  stubWalk(klass);
+  return klass as jest.Mocked<T>;
 }
