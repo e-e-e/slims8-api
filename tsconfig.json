@@ -7,9 +7,9 @@
         "noImplicitAny": true,
         "moduleResolution": "node",
         "sourceMap": true,
-        "outDir": "dist",
+        "outDir": "lib",
         "baseUrl": ".",
-	"strict": true,
+        "strict": true,
         "paths": {
             "*": [
                 "node_modules/*",
