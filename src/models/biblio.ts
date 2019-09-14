@@ -1,6 +1,6 @@
 import Knex from 'knex';
 import { MapDataType } from './data_types';
-import { AbstractCrudModel, Data, RequiredId, Model } from './abstract_crud';
+import { AbstractCrudModel, Data, RequiredId, createOrUpdate, maybeGetData } from './abstract_crud';
 import { GeneralMaterialDesignation, GmdData } from './gmd';
 import { Frequency, FrequencyData } from './frequency';
 import { Publisher, PublisherData } from './publisher';
@@ -103,21 +103,6 @@ type Models = {
   author: Author,
 }
 
-async function createOrUpdate<T extends Data>(data: T | undefined, model: Model<T>) {
-  if (!data) return;
-  if (data.id === undefined) {
-    try {
-      return await model.create(data);
-    } catch (e) {
-      const matches = await model.find(data);
-      // do we need to update?
-      return matches.length ? matches[0].id : undefined;
-    }
-  }
-  await model.update({ ...data, id: data.id });
-  return data.id;
-}
-
 async function maybeCreateLanguage(data: LanguageData | undefined, model: Language) {
   if (!data) return;
   try {
@@ -130,10 +115,7 @@ async function maybeCreateLanguage(data: LanguageData | undefined, model: Langua
   return data.id;
 }
 
-async function maybeGetData<T extends Data>(id: number | undefined, model: Model<T>): Promise<RequiredId<T> | undefined> {
-  if (id == undefined) return undefined;
-  return model.get(id);
-}
+
 
 export class Biblio extends AbstractCrudModel<BiblioData, RawBiblioData, 'biblio_id'> {
 

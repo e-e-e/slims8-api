@@ -10,6 +10,8 @@ import { CarrierType } from './models/carrier_type';
 import { MediaType } from './models/media_type';
 import { Frequency } from './models/frequency';
 import { Language } from './models/language';
+import { Collection } from './models/collection';
+import { Item } from './models/item';
 
 interface SlimsApi {
   readonly publisher: Publisher;
@@ -23,6 +25,8 @@ interface SlimsApi {
   readonly biblio: Biblio;
   readonly author: Author;
   readonly topic: Topic;
+  readonly collection: Collection;
+  readonly item: Item;
 }
 
 export function createSlimsApi(connection: Config): SlimsApi {
@@ -49,6 +53,8 @@ export function createSlimsApi(connection: Config): SlimsApi {
     author,
     topic,
   });
+  const collection = new Collection(db);
+  const item = new Item(db, { collection });
 
   return {
     biblio,
@@ -62,5 +68,7 @@ export function createSlimsApi(connection: Config): SlimsApi {
     frequency,
     language,
     topic,
+    item,
+    collection,
   };
 }

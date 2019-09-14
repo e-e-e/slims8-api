@@ -1,10 +1,7 @@
-import { Data, AbstractCrudModel } from "./abstract_crud";
-import { MapDataType } from "./data_types";
 import * as Knex from "knex";
-
-type CollectionTypeData = Data & {
-  name: string,
-};
+import { Data, AbstractCrudModel, maybeGetData, createOrUpdate } from "./abstract_crud";
+import { MapDataType } from "./data_types";
+import { Collection, CollectionData } from "./collection";
 
 type LocationData = {
   id: string, // `location_id` varchar(3) COLLATE utf8_unicode_ci NOT NULL,
@@ -27,7 +24,7 @@ export enum ItemSource {
 export type ItemData = Data & {
   biblioId?: number, // int(11) DEFAULT NULL,
   callNumber?: string, // varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  collType?: CollectionTypeData, // int(3) DEFAULT NULL,
+  collection?: CollectionData, // int(3) DEFAULT NULL,
   itemCode?: string, // varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
   inventoryCode?: string, // varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
   receivedDate?: Date, // date DEFAULT NULL,
@@ -50,7 +47,7 @@ const itemColumns = {
   id: 'item_id', // int(11) NOT NULL AUTO_INCREMENT,
   biblioId: 'biblio_id', // int(11) DEFAULT NULL,
   callNumber: 'call_number', // varchar(50) COLLATE utf8_unicode_ci DEFAULT NULL,
-  collType: 'coll_type_id', // int(3) DEFAULT NULL,
+  collection: 'coll_type_id', // int(3) DEFAULT NULL,
   itemCode: 'item_code', // varchar(20) COLLATE utf8_unicode_ci DEFAULT NULL,
   inventoryCode: 'inventory_code', // varchar(200) COLLATE utf8_unicode_ci DEFAULT NULL,
   receivedDate: 'received_date', // date DEFAULT NULL,
@@ -81,9 +78,15 @@ type TableOverride = {
 
 type RawItemData = MapDataType<typeof itemColumns, ItemData, TableOverride>
 
+type Models = {
+  collection: Collection,
+}
 
 export class Item extends AbstractCrudModel<ItemData, RawItemData, typeof itemColumns.id>{
-  constructor(db: Knex) {
+  constructor(
+    db: Knex,
+    private readonly models: Models
+  ) {
     super(db, itemTable, itemColumns.id);
   }
 
@@ -91,7 +94,7 @@ export class Item extends AbstractCrudModel<ItemData, RawItemData, typeof itemCo
     return {
       item_id: data.id,
       biblio_id: data.biblioId,
-      coll_type_id: data.collType ? data.collType.id : undefined,
+      coll_type_id: data.collection ? data.collection.id : undefined,
       location_id: data.location ? data.location.id : undefined,
       item_status_id: data.itemStatus ? data.itemStatus.id : undefined,
       call_number: data.callNumber,
@@ -114,7 +117,7 @@ export class Item extends AbstractCrudModel<ItemData, RawItemData, typeof itemCo
     return {
       item_id: data.id,
       biblio_id: data.biblioId,
-      coll_type_id: data.collType ? data.collType.id : undefined,
+      coll_type_id: await createOrUpdate(data.collection, this.models.collection),
       location_id: data.location ? data.location.id : undefined,
       item_status_id: data.itemStatus ? data.itemStatus.id : undefined,
       call_number: data.callNumber,
@@ -139,7 +142,7 @@ export class Item extends AbstractCrudModel<ItemData, RawItemData, typeof itemCo
     return {
       id: data.item_id,
       biblioId: data.biblio_id,
-      collType: undefined, // data.coll_type_id,
+      collection: await maybeGetData(data.coll_type_id, this.models.collection),
       location: undefined, //data.location_id,
       itemStatus: undefined, //data.item_status_id,
       callNumber: data.call_number,

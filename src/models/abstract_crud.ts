@@ -13,6 +13,26 @@ export type RequiredId<T extends Data> = Omit<T, 'id'> & { id: IdType }
 
 export type SelectOptionsType = { offset?: number, limit: number };
 
+export async function createOrUpdate<T extends Data>(data: T | undefined, model: Model<T>) {
+  if (!data) return;
+  if (data.id === undefined) {
+    try {
+      return await model.create(data);
+    } catch (e) {
+      const matches = await model.find(data);
+      // do we need to update?
+      return matches.length ? matches[0].id : undefined;
+    }
+  }
+  await model.update({ ...data, id: data.id });
+  return data.id;
+}
+
+export async function maybeGetData<T extends Data>(id: number | undefined, model: Model<T>): Promise<RequiredId<T> | undefined> {
+  if (id == undefined) return undefined;
+  return model.get(id);
+}
+
 export interface Model<T extends Data> {
   create(data: T | RequiredId<T>): Promise<number | undefined>;
   get(id: number): Promise<RequiredId<T> | undefined>;

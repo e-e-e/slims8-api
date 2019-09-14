@@ -1,5 +1,6 @@
 import { Item, ItemData, ItemSource } from '../src/models/item';
 import { createCrudTests } from './crud_helpers';
+import { Collection } from '../src/models/collection';
 
 describe('Publisher', () => {
 
@@ -23,9 +24,17 @@ describe('Publisher', () => {
     invoiceDate: new Date(2019, 3, 2),
   };
 
+  const itemWithCollection = {
+    source: ItemSource.PURCHASE,
+    collection: {
+      name: 'Australia Council'
+    }
+  };
+
   const items: ItemData[] = [
     emptyItem,
     simpleItem,
+    itemWithCollection,
   ];
 
   const duplicates = [
@@ -38,8 +47,14 @@ describe('Publisher', () => {
 
   /* eslint-disable-next-line jest/valid-describe */
   describe('abstract crud interface', createCrudTests<ItemData>({
-    createModel: db => new Item(db),
-    clean: async (knex) => knex('item').delete(),
+    createModel: db => {
+      const collection = new Collection(db);
+      return new Item(db, { collection });
+    },
+    clean: async (db) => {
+      await db('item').delete();
+      await db('mst_coll_type').delete();
+    },
     seeds,
     create: items,
     duplicates,
