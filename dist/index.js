@@ -25,6 +25,8 @@ function createSlimsApi(connection) {
     const mediaType = new media_type_1.MediaType(db);
     const frequency = new frequency_1.Frequency(db);
     const language = new language_1.Language(db);
+    const author = new author_1.Author(db);
+    const topic = new topic_1.Topic(db);
     const biblio = new biblio_1.Biblio(db, {
         publisher,
         gmd,
@@ -34,9 +36,9 @@ function createSlimsApi(connection) {
         mediaType,
         frequency,
         language,
+        author,
+        topic,
     });
-    const author = new author_1.Author(db);
-    const topic = new topic_1.Topic(db);
     return {
         biblio,
         author,

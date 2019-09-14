@@ -86,6 +86,97 @@ class Biblio extends abstract_crud_1.AbstractCrudModel {
     constructor(db, models) {
         super(db, biblioTable, biblioColumns.id);
         this.models = models;
+        this.authorRelationTable = 'biblio_author';
+        this.topicRelationTable = 'biblio_topic';
+    }
+    // Author related functions
+    addAuthor(biblioId, author, level) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Do we throw error if biblioId does not exist or author does not exist
+            if (!(yield this.get(biblioId)))
+                throw new Error(`Biblio with id ${author} does not exist`);
+            let id = typeof author === 'number' ? author : author.id;
+            if (id !== undefined) {
+                const a = yield this.models.author.get(id);
+                if (!a && typeof author === 'number') {
+                    throw new Error(`Author with id ${author} does not exist`);
+                }
+                else if (!a) {
+                    id = undefined;
+                }
+            }
+            if (id === undefined && typeof author !== 'number') {
+                id = yield this.models.author.create(author);
+            }
+            yield this.db(this.authorRelationTable).insert({
+                [biblioColumns.id]: biblioId,
+                author_id: id,
+                level,
+            });
+            return id;
+        });
+    }
+    getAuthors(biblioId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const results = yield this.db(this.authorRelationTable).select('author_id').where(biblioColumns.id, biblioId);
+            return Promise.all(results.map(result => this.models.author.get(result.author_id)));
+        });
+    }
+    removeAuthor(biblioId, author) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (typeof author !== 'number' && !author.id) {
+                throw new Error('Author with id required!');
+            }
+            return this.db(this.authorRelationTable).delete().where({
+                [biblioColumns.id]: biblioId,
+                author_id: typeof author !== 'number' ? author.id : author,
+            });
+        });
+    }
+    // Topic related functions
+    // TODO: make relational methods generic
+    addTopic(biblioId, topic, level) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // Do we throw error if biblioId does not exist or topic does not exist
+            if (!(yield this.get(biblioId)))
+                throw new Error(`Biblio with id ${topic} does not exist`);
+            let id = typeof topic === 'number' ? topic : topic.id;
+            if (id !== undefined) {
+                const a = yield this.models.topic.get(id);
+                if (!a && typeof topic === 'number') {
+                    throw new Error(`Topic with id ${topic} does not exist`);
+                }
+                else if (!a) {
+                    id = undefined;
+                }
+            }
+            if (id === undefined && typeof topic !== 'number') {
+                id = yield this.models.topic.create(topic);
+            }
+            yield this.db(this.topicRelationTable).insert({
+                [biblioColumns.id]: biblioId,
+                topic_id: id,
+                level,
+            });
+            return id;
+        });
+    }
+    getTopics(biblioId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const results = yield this.db(this.topicRelationTable).select('topic_id').where(biblioColumns.id, biblioId);
+            return Promise.all(results.map(result => this.models.topic.get(result.topic_id)));
+        });
+    }
+    removeTopic(biblioId, topic) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (typeof topic !== 'number' && !topic.id) {
+                throw new Error('Author with id required!');
+            }
+            return this.db(this.topicRelationTable).delete().where({
+                [biblioColumns.id]: biblioId,
+                topic_id: typeof topic !== 'number' ? topic.id : topic,
+            });
+        });
     }
     toPartialRaw(data) {
         return {
