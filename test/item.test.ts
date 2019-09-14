@@ -30,7 +30,7 @@ describe('Publisher', () => {
 
   const duplicates = [
     simpleItem,
-  ]
+  ];
 
   const seeds = [
     emptyItem,
