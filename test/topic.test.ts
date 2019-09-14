@@ -1,17 +1,14 @@
-import { Topic, TopicData, TopicType } from '../src/models/topic';
+import { Topic, TopicData } from '../src/models/topic';
 import { createCrudTests } from './crud_helpers';
+import { topicWithAuthList, topicWithClassification, topicWithType, simpleTopic } from './fakes/topics';
 
 describe('Topic', () => {
-  const simple: TopicData = { name: 'anarchism' };
-  const withType: TopicData = { name: 'australia', type: TopicType.GEOGRAPHIC };
-  const withClassification: TopicData = { name: 'classified', classification: 'a-loc-id' };
-  const withAuthList: TopicData = { name: 'bibliography', authorityList: 'loc' };
 
   const topics = [
-    simple,
-    withType,
-    withClassification,
-    withAuthList,
+    simpleTopic,
+    topicWithAuthList,
+    topicWithClassification,
+    topicWithType,
   ];
 
   const seeds = [{

@@ -148,6 +148,7 @@ export class Biblio extends AbstractCrudModel<BiblioData, RawBiblioData, 'biblio
   }
 
   // Author related functions
+
   async addAuthor(biblioId: number, author: AuthorData | number, level: number) {
     // Do we throw error if biblioId does not exist or author does not exist
     if (!await this.get(biblioId)) throw new Error(`Biblio with id ${author} does not exist`);
@@ -188,6 +189,48 @@ export class Biblio extends AbstractCrudModel<BiblioData, RawBiblioData, 'biblio
     });
   }
 
+  // Topic related functions
+  // TODO: make relational methods generic
+
+  async addTopic(biblioId: number, topic: TopicData | number, level: number) {
+    // Do we throw error if biblioId does not exist or topic does not exist
+    if (!await this.get(biblioId)) throw new Error(`Biblio with id ${topic} does not exist`);
+    let id = typeof topic === 'number' ? topic : topic.id;
+    if (id !== undefined) {
+      const a = await this.models.topic.get(id)
+      if (!a && typeof topic === 'number') {
+        throw new Error(`Topic with id ${topic} does not exist`);
+      } else if (!a) {
+        id = undefined;
+      }
+    }
+    if (id === undefined && typeof topic !== 'number') {
+      id = await this.models.topic.create(topic);
+    }
+    await this.db(this.topicRelationTable).insert({
+      [biblioColumns.id]: biblioId,
+      topic_id: id,
+      level,
+    });
+    return id;
+  }
+
+  async getTopics(biblioId: number) {
+    const results = await this.db(this.topicRelationTable).select('topic_id').where(biblioColumns.id, biblioId);
+    return Promise.all(
+      results.map(result => this.models.topic.get(result.topic_id))
+    );
+  }
+
+  async removeTopic(biblioId: number, topic: TopicData | number) {
+    if (typeof topic !== 'number' && !topic.id) {
+      throw new Error('Author with id required!');
+    }
+    return this.db(this.topicRelationTable).delete().where({
+      [biblioColumns.id]: biblioId,
+      topic_id: typeof topic !== 'number' ? topic.id : topic,
+    });
+  }
 
   protected toPartialRaw(data: Partial<BiblioData>) {
     return {

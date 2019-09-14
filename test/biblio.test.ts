@@ -14,6 +14,8 @@ import { Language } from '../src/models/language';
 import { Author } from '../src/models/author';
 import { Topic } from '../src/models/topic';
 import { marx, donna, invisibleCollective, frontyard, proudhon } from './fakes/authors';
+import { topicWithClassification, topicWithType, simpleTopic } from './fakes/topics';
+
 import { createMockInstance } from './create_mock_instance';
 
 describe('Biblio', () => {
@@ -103,6 +105,8 @@ describe('Biblio', () => {
     await db('mst_place').delete();
     await db('biblio_author').delete();
     await db('mst_author').delete();
+    await db('biblio_topic').delete();
+    await db('mst_topic').delete();
   };
 
   /* eslint-disable-next-line jest/valid-describe */
@@ -113,6 +117,7 @@ describe('Biblio', () => {
     create: books,
   }));
 
+  // TODO: Can these relational tests be made generic
   describe('relational operations', () => {
     let db: Knex;
     let model: Biblio;
@@ -262,6 +267,117 @@ describe('Biblio', () => {
         const results = await db('biblio_author').select();
         expect(results).toHaveLength(0);
         await expect(author.get(person)).resolves.toEqual(expect.objectContaining(marx));
+      });
+    });
+
+    describe('addTopic', () => {
+
+      it('adds new topic associated to biblio id', async () => {
+        const bookId = await model.create(simple);
+        const subject = await topic.create(simpleTopic);
+        if (!bookId || !subject) throw new Error('biblio or topic creation failed');
+        await model.addTopic(bookId, subject, 1);
+        const results = await db('biblio_topic').select();
+        expect(results).toHaveLength(1);
+        expect(results[0]).toEqual({
+          biblio_id: bookId,
+          topic_id: subject,
+          level: 1,
+        });
+      });
+
+      it('creates new topic if does not exist (without id specified)', async () => {
+        const bookId = await model.create(simple);
+        if (!bookId) throw new Error('Biblio creation failed');
+        await model.addTopic(bookId, topicWithType, 2);
+        const topics = await topic.all();
+        const results = await db('biblio_topic').select();
+        expect(results).toHaveLength(1);
+        expect(topics).toHaveLength(1);
+        expect(results[0]).toEqual({
+          biblio_id: bookId,
+          topic_id: topics[0].id,
+          level: 2,
+        });
+      });
+
+      it('creates new topic if does not exist (with id specified)', async () => {
+        const bookId = await model.create(simple);
+        if (!bookId) throw new Error('Biblio creation failed');
+        const simpleTopicWithId = { ...simpleTopic, id: 1234 };
+        await model.addTopic(bookId, simpleTopicWithId, 2);
+        const topics = await topic.all();
+        expect(topics).toHaveLength(1);
+        const results = await db('biblio_topic').select();
+        expect(results).toHaveLength(1);
+        expect(results[0]).toEqual({
+          biblio_id: bookId,
+          topic_id: topics[0].id,
+          level: 2,
+        });
+        expect(topics[0].id).toEqual(1234);
+      });
+
+      it('throws error if topic id does not exist', async () => {
+        const bookId = await model.create(simple);
+        if (!bookId) throw new Error('Biblio creation failed');
+        await expect(model.addTopic(bookId, 1000, 1)).rejects.toThrow();
+      });
+
+      it('throws error is book id is undefined', async () => {
+        const topicId = await topic.create(simpleTopic);
+        if (!topicId) throw new Error('Topic creation failed');
+        await expect(model.addTopic(100000, topicId, 1)).rejects.toThrow();
+      });
+    });
+
+    describe('getTopics', () => {
+      it('returns an empty array if no topics associated with biblio id', async () => {
+        const bookId = await model.create(simple);
+        if (!bookId) throw new Error('Biblio creation failed');
+        const topics = await model.getTopics(122);
+        expect(topics).toEqual([]);
+      });
+      it('returns an ordered array of topics', async () => {
+        const bookId = await model.create(simple);
+        if (!bookId) throw new Error('Biblio creation failed');
+        await model.addTopic(bookId, simpleTopic, 1);
+        await model.addTopic(bookId, topicWithType, 2);
+        await model.addTopic(bookId, topicWithClassification, 2);
+        const topics = await model.getTopics(bookId);
+        expect(topics).toHaveLength(3);
+        expect(topics[0]).toEqual(expect.objectContaining(simpleTopic));
+        expect(topics[1]).toEqual(expect.objectContaining(topicWithType));
+        expect(topics[2]).toEqual(expect.objectContaining(topicWithClassification));
+      });
+    });
+
+    describe('removeTopic', () => {
+      it('removes topic association', async () => {
+        const bookId = await model.create(simple);
+        const person = await topic.create(simpleTopic);
+        if (!bookId || !person) throw new Error('biblio or topic creation failed');
+        await model.addTopic(bookId, person, 1);
+        let results = await db('biblio_topic').select();
+        expect(results).toHaveLength(1);
+        expect(results[0]).toEqual({
+          biblio_id: bookId,
+          topic_id: person,
+          level: 1,
+        });
+        await model.removeTopic(bookId, person);
+        results = await db('biblio_topic').select();
+        expect(results).toHaveLength(0);
+      });
+      it('does not remove the topic from the database', async () => {
+        const bookId = await model.create(simple);
+        const person = await topic.create(simpleTopic);
+        if (!bookId || !person) throw new Error('biblio or topic creation failed');
+        await model.addTopic(bookId, person, 1);
+        await model.removeTopic(bookId, person);
+        const results = await db('biblio_topic').select();
+        expect(results).toHaveLength(0);
+        await expect(topic.get(person)).resolves.toEqual(expect.objectContaining(simpleTopic));
       });
     });
   });
