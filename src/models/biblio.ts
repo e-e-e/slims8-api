@@ -271,7 +271,7 @@ export class Biblio extends AbstractCrudModel<BiblioData, RawBiblioData, 'biblio
       language_id: data.language ? await maybeCreateLanguage(data.language, this.models.language) : 'en',
       gmd_id: await createOrUpdate(data.gmd, this.models.gmd),
       publisher_id: await createOrUpdate(data.publisher, this.models.publisher),
-      publish_place_id: await createOrUpdate(data.publishPlace, this.models.publisher),
+      publish_place_id: await createOrUpdate(data.publishPlace, this.models.place),
       frequency_id: await createOrUpdate(data.frequency, this.models.frequency) || 0,
       content_type_id: await createOrUpdate(data.contentType, this.models.contentType),
       media_type_id: await createOrUpdate(data.mediaType, this.models.mediaType),
