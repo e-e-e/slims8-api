@@ -27,9 +27,10 @@ interface SlimsApi {
   readonly topic: Topic;
   readonly collection: Collection;
   readonly item: Item;
+  readonly close: () => Promise<void>;
 }
 
-export function createSlimsApi(connection: Config): SlimsApi {
+export function create(connection: Config): SlimsApi {
   const db = Knex(connection);
   const publisher = new Publisher(db);
   const gmd = new GeneralMaterialDesignation(db);
@@ -70,5 +71,6 @@ export function createSlimsApi(connection: Config): SlimsApi {
     topic,
     item,
     collection,
+    close: () => db.destroy(),
   };
 }
