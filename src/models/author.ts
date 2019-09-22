@@ -3,9 +3,9 @@ import { MapDataType, PartialBy, UnreachableError } from './data_types';
 import { AbstractCrudModel, Data } from './abstract_crud';
 
 export enum AuthorType {
-  PERSON,
-  ORGANISATION,
-  COLLECTIVE,
+  PERSON = 'person',
+  ORGANISATION = 'organisation',
+  COLLECTIVE = 'collective',
 }
 
 type RawAuthorType = 'o' | 'p' | 'c';
