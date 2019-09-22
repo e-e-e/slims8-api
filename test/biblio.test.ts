@@ -234,6 +234,22 @@ describe('Biblio', () => {
         if (!authorId) throw new Error('Author creation failed');
         await expect(model.addAuthor(100000, authorId, 1)).rejects.toThrow();
       });
+
+      it('does nothing if relation already exists', async () => {
+        const bookId = await model.create(simple);
+        const authorId = await author.create(proudhon);
+        if (!bookId) throw new Error('Biblio creation failed');
+        if (!authorId) throw new Error('Author creation failed');
+        await model.addAuthor(bookId, authorId, 1);
+        await model.addAuthor(bookId, authorId, 1);
+        const results = await db('biblio_author').select();
+        expect(results).toHaveLength(1);
+        expect(results[0]).toEqual({
+          biblio_id: bookId,
+          author_id: authorId,
+          level: 1,
+        });
+      })
     });
 
     describe('getAuthors', () => {
@@ -361,6 +377,21 @@ describe('Biblio', () => {
         if (!topicId) throw new Error('Topic creation failed');
         await expect(model.addTopic(100000, topicId, 1)).rejects.toThrow();
       });
+      it('does nothing if relation already exists', async () => {
+        const bookId = await model.create(simple);
+        const topicId = await topic.create(simpleTopic);
+        if (!bookId) throw new Error('Biblio creation failed');
+        if (!topicId) throw new Error('Topic creation failed');
+        await model.addTopic(bookId, topicId, 1);
+        await model.addTopic(bookId, topicId, 1);
+        const results = await db('biblio_topic').select();
+        expect(results).toHaveLength(1);
+        expect(results[0]).toEqual({
+          biblio_id: bookId,
+          topic_id: topicId,
+          level: 1,
+        });
+      })
     });
 
     describe('getTopics', () => {

@@ -153,12 +153,16 @@ export class Biblio extends AbstractCrudModel<BiblioData, RawBiblioData, 'biblio
         id = entries[0].id;
       }
     }
-    await this.db(this.authorRelationTable).insert({
-      [biblioColumns.id]: biblioId,
-      author_id: id,
-      level,
-    });
-    return id;
+    try {
+      await this.db(this.authorRelationTable).insert({
+        [biblioColumns.id]: biblioId,
+        author_id: id,
+        level,
+      });
+      return id;
+    } catch (e) {
+      if (!/ER_DUP_ENTRY/.test(e.message)) throw e;
+    }
   }
 
   async getAuthors(biblioId: number) {
@@ -203,12 +207,15 @@ export class Biblio extends AbstractCrudModel<BiblioData, RawBiblioData, 'biblio
         id = entries[0].id;
       }
     }
-    await this.db(this.topicRelationTable).insert({
-      [biblioColumns.id]: biblioId,
-      topic_id: id,
-      level,
-    });
-    return id;
+    try {
+      await this.db(this.topicRelationTable).insert({
+        [biblioColumns.id]: biblioId,
+        topic_id: id,
+        level,
+      });
+    } catch (e) {
+      if (!/ER_DUP_ENTRY/.test(e.message)) throw e;
+    }
   }
 
   async getTopics(biblioId: number) {
