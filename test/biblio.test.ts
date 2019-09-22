@@ -34,6 +34,7 @@ describe('Biblio', () => {
     title: 'Capital',
     mediaType: { type: 'unmediated', code: 'n', marcPrefix: 't' }
   };
+
   const withFrequency: BiblioData = {
     title: 'Commune Magazine',
     frequency: {
@@ -46,8 +47,8 @@ describe('Biblio', () => {
   const withLanguage: BiblioData = {
     title: 'The Cultural Politics of Emotions',
     language: {
-      id: 'en',
-      name: 'English'
+      id: 'fr',
+      name: 'French'
     }
   };
   const books = [
@@ -249,7 +250,7 @@ describe('Biblio', () => {
           author_id: authorId,
           level: 1,
         });
-      })
+      });
     });
 
     describe('getAuthors', () => {
@@ -391,7 +392,7 @@ describe('Biblio', () => {
           topic_id: topicId,
           level: 1,
         });
-      })
+      });
     });
 
     describe('getTopics', () => {
