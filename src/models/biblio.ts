@@ -144,7 +144,14 @@ export class Biblio extends AbstractCrudModel<BiblioData, RawBiblioData, 'biblio
       }
     }
     if (id === undefined && typeof author !== 'number') {
-      id = await this.models.author.create(author);
+      try {
+        id = await this.models.author.create(author);
+      } catch (e) {
+        if (!/ER_DUP_ENTRY/.test(e.message)) throw e;
+        const entries = await this.models.author.find(author);
+        if (entries.length === 0) throw new Error(`Cannot find authors ${author}`);
+        id = entries[0].id;
+      }
     }
     await this.db(this.authorRelationTable).insert({
       [biblioColumns.id]: biblioId,
@@ -187,7 +194,14 @@ export class Biblio extends AbstractCrudModel<BiblioData, RawBiblioData, 'biblio
       }
     }
     if (id === undefined && typeof topic !== 'number') {
-      id = await this.models.topic.create(topic);
+      try {
+        id = await this.models.topic.create(topic);
+      } catch (e) {
+        if (!/ER_DUP_ENTRY/.test(e.message)) throw e;
+        const entries = await this.models.topic.find(topic);
+        if (entries.length === 0) throw new Error(`Cannot find topics ${topic}`);
+        id = entries[0].id;
+      }
     }
     await this.db(this.topicRelationTable).insert({
       [biblioColumns.id]: biblioId,

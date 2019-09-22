@@ -190,6 +190,22 @@ describe('Biblio', () => {
         });
       });
 
+      it('does not create author if author already exists, but links existing author', async () => {
+        const bookId = await model.create(simple);
+        const personId = await author.create(marx);
+        if (!bookId) throw new Error('Biblio creation failed');
+        await model.addAuthor(bookId, marx, 1);
+        const authors = await author.all();
+        const results = await db('biblio_author').select();
+        expect(results).toHaveLength(1);
+        expect(authors).toHaveLength(1);
+        expect(results[0]).toEqual({
+          biblio_id: bookId,
+          author_id: personId,
+          level: 1,
+        });
+      });
+
       it('creates new author if does not exist (with id specified)', async () => {
         const bookId = await model.create(simple);
         if (!bookId) throw new Error('Biblio creation failed');
@@ -298,6 +314,22 @@ describe('Biblio', () => {
           biblio_id: bookId,
           topic_id: topics[0].id,
           level: 2,
+        });
+      });
+
+      it('does not create topic if topic already exists, but links existing author', async () => {
+        const bookId = await model.create(simple);
+        const topicId = await topic.create(topicWithType);
+        if (!bookId) throw new Error('Biblio creation failed');
+        await model.addTopic(bookId, topicWithType, 1);
+        const topics = await topic.all();
+        const results = await db('biblio_topic').select();
+        expect(results).toHaveLength(1);
+        expect(topics).toHaveLength(1);
+        expect(results[0]).toEqual({
+          biblio_id: bookId,
+          topic_id: topicId,
+          level: 1,
         });
       });
 
