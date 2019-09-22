@@ -148,9 +148,23 @@ export class Biblio extends AbstractCrudModel<BiblioData, RawBiblioData, 'biblio
         id = await this.models.author.create(author);
       } catch (e) {
         if (!/ER_DUP_ENTRY/.test(e.message)) throw e;
-        const entries = await this.models.author.find(author);
-        if (entries.length === 0) throw new Error(`Cannot find authors ${author}`);
-        id = entries[0].id;
+        //TODO: test this behaviour for year
+        const entries = await this.models.author.find({
+          name: author.name,
+          type: author.type,
+        });
+        if (entries.length === 0) throw new Error(e);
+        const entry = entries[0];
+        if (author.year && entry.year && entry.year !== author.year) {
+          console.log('WARNING: Conflicting dates', entry.year, 'and', author.year, '. keeping ', entry.year, '.');
+        }
+        if (!entry.year && author.year) {
+          await this.models.author.update({
+            ...entry,
+            year: author.year,
+          });
+        }
+        id = entry.id;
       }
     }
     try {
